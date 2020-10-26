@@ -190,6 +190,7 @@ function Set-TargetResource
         $InstallerPath,
 
         [Parameter()]
+        [ValidateScript( { $_ -notcontains ' ' } )]
         [System.String]
         $ServiceName,
 
@@ -242,9 +243,8 @@ function Set-TargetResource
             {
                 if ($arg -eq 'ServiceName')
                 {
-                    $finalServiceName = $ServiceName.Replace(' ','_')
-                    $arguments += "--servicename `"$finalServiceName`""
-                    Write-Verbose -Message ($script:localizedData.ParameterSetTo -f $arg, $finalServiceName)
+                    $arguments += "--servicename `"$ServiceName`""
+                    Write-Verbose -Message ($script:localizedData.ParameterSetTo -f $arg, $ServiceName)
                 }
                 elseif ($arg -eq 'features')
                 {
@@ -398,6 +398,7 @@ function Test-TargetResource
         $InstallerPath,
 
         [Parameter()]
+        [ValidateScript( { $_ -notcontains ' ' } )]
         [System.String]
         $ServiceName,
 

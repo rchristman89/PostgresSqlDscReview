@@ -1,0 +1,23 @@
+TOPIC
+    about_PostgreSqlDsc
+
+SHORT DESCRIPTION
+    DSC module to install and configure PostgreSQL on Windows.
+
+LONG DESCRIPTION
+    This module contains DSC resource for deployment and configuration of PostgreSQL.
+
+EXAMPLES
+    PS C:\> Get-DscResource -Module PostgreSqlDsc
+
+NOTE:
+    Thank you to all those who contributed to this module, by writing code, sharing opinions, and provided feedback.
+
+TROUBLESHOOTING NOTE:
+    Look out on the Github repository for issues and new releases. https://github.com/dsccommunity/PostgreSqlDsc
+
+SEE ALSO
+  - https://github.com/dsccommunity/PostgreSqlDsc
+
+KEYWORDS
+      DSC, DscResource, SqlServer, PostgreSqlDsc

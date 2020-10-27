@@ -41,7 +41,7 @@ function Get-TargetResource
     )
 
     Write-Verbose -Message ($script:localizedData.SearchingRegistry -f $Version)
-    $registryKeys = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object -FilterScript {$_.Name -eq "PostgreSQL $Version"}
+    $registryKeys = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object -FilterScript {$_.Name -eq "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PostgreSQL $Version"}
 
     if ($null -eq $registryKeys)
     {
@@ -117,16 +117,17 @@ function Get-TargetResource
         }
 
         Write-Verbose -Message ($script:localizedData.FoundKeysForVersion -f $Version)
+
         $getResults = @{
             Ensure           = 'Present'
-            Version          = $registryKeys.GetValue('DisplayVersion')
+            Version          = $Version
             InstallerPath    = $InstallerPath
             InstallDirectory = $prefixRegistry
             ServiceName      = $serviceDisplayName
             ServiceAccount   = $serviceLogon
             DataDirectory    = $serviceDataDir
             ServerPort       = $confPort
-            Features         = $installedFeatures -join ','
+            Features         = $installedFeatures
         }
     }
 
@@ -243,29 +244,29 @@ function Set-TargetResource
             {
                 if ($arg -eq 'ServiceName')
                 {
-                    $arguments += "--servicename `"$ServiceName`""
+                    $arguments += '--servicename "{0}"' -f $ServiceName
                     Write-Verbose -Message ($script:localizedData.ParameterSetTo -f $arg, $ServiceName)
                 }
                 elseif ($arg -eq 'features')
                 {
                     $featuresToString = ($PSBoundParameters[$arg] -join ',').ToLower()
                     $finalFeatureString = $featuresToString.Replace('pgadmin', 'pgAdmin')
-                    $arguments += "--enable-components `"$finalFeatureString`""
+                    $arguments += '--enable-components "{0}"' -f $finalFeatureString
                     Write-Verbose -Message ($script:localizedData.ParameterSetTo -f 'enable-components', $finalFeatureString)
                 }
                 elseif ($arg -eq 'DataDirectory')
                 {
-                    $arguments += "--datadir `"$($PSBoundParameters[$arg])`""
+                    $arguments += '--datadir "{0}"' -f $($PSBoundParameters[$arg])
                     Write-Verbose -Message ($script:localizedData.ParameterSetTo -f 'datadir', $($PSBoundParameters[$arg]))
                 }
                 elseif ($arg -eq 'InstallDirectory')
                 {
-                    $arguments += "--prefix `"$($PSBoundParameters[$arg])`""
+                    $arguments += '--prefix "{0}"' -f $($PSBoundParameters[$arg])
                     Write-Verbose -Message ($script:localizedData.ParameterSetTo -f 'prefix', $($PSBoundParameters[$arg]))
                 }
                 else
                 {
-                    $arguments += "--$arg `"$($PSBoundParameters[$arg])`""
+                    $arguments += '--{0} "{1}"' -f $arg, $($PSBoundParameters[$arg])
                     Write-Verbose -Message ($script:localizedData.ParameterSetTo -f $arg, $($PSBoundParameters[$arg]))
                 }
             }
@@ -274,21 +275,21 @@ function Set-TargetResource
         $builtinAccounts = @('NT AUTHORITY\NetworkService', 'NT AUTHORITY\System', 'NT AUTHORITY\Local Service')
         if (-not ($null -eq $ServiceAccount))
         {
-            $arguments += "--serviceaccount `"$($ServiceAccount.UserName)`""
+            $arguments += '--serviceaccount "{0}"' -f $($ServiceAccount.UserName)
             Write-Verbose -Message ($script:localizedData.ParameterSetTo -f 'serviceaccount', $($ServiceAccount.UserName))
 
             if (-not ($ServiceAccount.UserName -in $builtinAccounts))
             {
-                $arguments += "--servicepassword $($ServiceAccount.GetNetworkCredential().Password)"
+                $arguments += '--servicepassword "{0}"' -f $($ServiceAccount.GetNetworkCredential().Password)
             }
         }
 
         if (-not ($null -eq $SuperAccount))
         {
-            $arguments += "--superaccount `"$($SuperAccount.UserName)`""
+            $arguments += '--superaccount "{0}"' -f $($SuperAccount.UserName)
             Write-Verbose -Message ($script:localizedData.ParameterSetTo -f 'SuperAccount', $($SuperAccount.UserName))
 
-            $arguments += "--superpassword `"$($SuperAccount.GetNetworkCredential().Password)`""
+            $arguments += '--superpassword "{0}"' -f $($SuperAccount.GetNetworkCredential().Password)
         }
 
         $displayArguments = $arguments.Clone()
@@ -320,7 +321,7 @@ function Set-TargetResource
     else
     {
         Write-Verbose -Message ($script:localizedData.SearchingRegistry -f $Version)
-        $uninstallRegistry = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object -FilterScript {$_.Name -eq "PostgreSQL $Version"}
+        $uninstallRegistry = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' | Where-Object -FilterScript {$_.Name -eq "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PostgreSQL $Version"}
         $uninstallString = $uninstallRegistry.GetValue('UninstallString')
 
         Write-Verbose -Message ($script:localizedData.PosgreSqlUninstall)
